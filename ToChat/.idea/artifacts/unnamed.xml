@@ -1,0 +1,13 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="unnamed">
+    <output-path>$PROJECT_DIR$/out/artifacts/unnamed</output-path>
+    <root id="archive" name="unnamed.jar">
+      <element id="directory" name="com">
+        <element id="directory" name="Server">
+          <element id="file-copy" path="$PROJECT_DIR$/target/classes/Server/Server.class" />
+          <element id="file-copy" path="$PROJECT_DIR$/target/classes/Server/ServerThread.class" />
+        </element>
+      </element>
+    </root>
+  </artifact>
+</component>
