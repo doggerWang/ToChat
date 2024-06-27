@@ -4,7 +4,7 @@
 项目分为服务端和客户端，服务端部署在云服务器，可通过客户端连接。
 为了加强对底层Socket通信的理解以及模拟网络协议，采用Java原生的Socket API进行网络通信。
 并没有采取常用的servelet容器比如tomcat以及web框架spring mvc。
-客户端采用Swing制作了一个简单的界面，并打包成exe文件。
+客户端采用Swing制作了一个简单的界面，并打包成exe文件[ToChat.exe](ToChat.exe)
 服务端采用springboot框架管理第三方依赖及打包，用ServerSocket监听客户端的网络请求。
 一些重要的点：
 
