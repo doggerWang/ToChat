@@ -7,10 +7,10 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
+import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 
-import static org.ghw.ServerThread.broadcast;
-import static org.ghw.ServerThread.encryptWrite;
+
 
 @Component
 public class MyTask {
@@ -18,15 +18,15 @@ public class MyTask {
     public static  void task() throws IOException {
         int num=0;
         Server.writeLock.lock();
-            Iterator<Socket>iterator=Server.socketList.iterator();
+            Iterator<SocketChannel>iterator=Server.socketChannels.iterator();
             while(iterator.hasNext()){
-                Socket s=iterator.next();
-                if(s.isClosed()) iterator.remove();
+                SocketChannel s=iterator.next();
+                if(!s.isOpen()) iterator.remove();
                 else num++;
             }
         Server.socketList.trimToSize();
       Server.writeLock.unlock();
       if(num!=0)
-      broadcast(proxyUtil.make("Data",num));
+      Server.broadcast(proxyUtil.make("Data",num));
     }
 }

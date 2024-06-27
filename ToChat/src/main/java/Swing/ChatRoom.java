@@ -11,14 +11,18 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Random;
 
 
 public class ChatRoom {
-  public  String ip = "47.115.213.200";
+  public  String ip = "localhost";
     //服务端端口
     public  int port = 5000;
     boolean isFilter=false;
@@ -241,43 +245,57 @@ public class ChatRoom {
             throw new RuntimeException(ex);
         }
         while(true){
-            String receive = readDecrypt(input);
-            String[] param = receive.split("&");
-            if(param.length<3) continue;
-            if(param[1].equals("Enter")&&!isFilter) messageListModel.addElement(param[2]+"进入聊天室");
-            else if(param[1].equals("Quit")&&!isFilter) messageListModel.addElement(param[2]+"离开聊天室");
-            else if(param[1].equals("Data")) num.setText("在线人数："+param[2]+"人");
-            else if(param[1].equals("Message"))messageListModel.addElement(MessageFormat.format("{0}({1}): {2}",param[2],param[3],param[4]));
-            System.out.println(receive);
-            Thread.sleep(20);
+            ArrayList<String> receives = readDecrypt(input);
+            for(String receive:receives){
+                String[] param = receive.split("&");
+                if(param.length<3) continue;
+                if(param[1].equals("Enter")&&!isFilter) messageListModel.addElement(param[2]+"进入聊天室");
+                else if(param[1].equals("Quit")&&!isFilter) messageListModel.addElement(param[2]+"离开聊天室");
+                else if(param[1].equals("Data")) num.setText("在线人数："+param[2]+"人");
+                else if(param[1].equals("Message"))messageListModel.addElement(MessageFormat.format("{0}({1}): {2}",param[2],param[3],param[4]));
+                System.out.println(receive);
+                Thread.sleep(20);
+            }
+
         }
 
     }
 
     public static void encryptWrite(String src,DataOutputStream output)throws IOException {
-        //将一个字符串转化为字符数组
-        //System.out.println(src);
-        char[] char_arr = src.toCharArray();
-        //加密操作
-        for(int i = 0;i<char_arr.length;i++){
-            output.writeChar(char_arr[i]+13);
+        StringBuilder encryptedMessage = new StringBuilder();
+
+        // 对字符串中的每个字符进行加密操作
+        for (int i = 0; i < src.length(); i++) {
+            encryptedMessage.append((char) (src.charAt(i) + 13));
         }
-        //用作结束标志符
-        output.writeChar(2333);
-        output.flush();
+
+        // 添加结束标志符
+        encryptedMessage.append((char) 2333);
+
+        output.write(encryptedMessage.toString().getBytes(StandardCharsets.UTF_8));
     }
 
-    public static String readDecrypt(DataInputStream input)throws IOException{
-        String rtn="";
-        while(true){
-            int char_src =input.readChar();
-            if(char_src!=2333){
-                rtn=rtn+(char)(char_src-13);
-            }else{
-                break;
+    public static ArrayList<String> readDecrypt(DataInputStream input) throws IOException {
+        // 读取整个输入流到字节数组
+        byte[] byteArray = new byte[input.available()];
+        input.read(byteArray);
+        // 将字节数组解码为字符串
+        String data = new String(byteArray, StandardCharsets.UTF_8);
+
+        // 解析报文
+        ArrayList<String> messages = new ArrayList<>();
+        StringBuilder currentMessage = new StringBuilder();
+        for (int i = 0; i < data.length(); i++) {
+            char currentChar = data.charAt(i);
+            if (currentChar == 2333) {
+                messages.add(currentMessage.toString());
+                currentMessage.setLength(0); // 清空当前报文
+            } else {
+                currentMessage.append((char)(currentChar - 13)); // 解密操作
             }
         }
-        return rtn;
+
+        return messages;
     }
 
 }
